@@ -1,27 +1,32 @@
-import React from "react";
 import Navbar from "../components/Navbar";
 
 function EmployeeDashboard() {
   return (
-    <div>
-      <Navbar role="employee" />
+    <>
+      <Navbar role="Employee" />
 
-      <div style={{ padding: "20px" }}>
-        <h2>Employee Workspace</h2>
+      <div className="dashboard-container">
+        <h1>My Workspace</h1>
 
-        <div>
-          <h3>My Tasks</h3>
-          <p>To-Do: --</p>
-          <p>In Progress: --</p>
-          <p>Completed: --</p>
+        <div className="stats-grid">
+          <div className="card">📌 My Tasks: 5</div>
+          <div className="card">⏳ Pending: 2</div>
+          <div className="card">✅ Completed: 12</div>
         </div>
 
-        <div>
-          <h3>Performance</h3>
-          <p>Tasks Completed This Week: --</p>
+        <div className="section">
+          <h2>My Tasks</h2>
+          <div className="task-row">
+            <span>Authentication Module</span>
+            <span className="badge inprogress">In Progress</span>
+          </div>
+          <div className="task-row">
+            <span>Fix Login Bug</span>
+            <span className="badge todo">To Do</span>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

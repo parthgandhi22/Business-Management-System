@@ -1,30 +1,29 @@
-import React from "react";
 import Navbar from "../components/Navbar";
 
 function AdminDashboard() {
   return (
-    <div>
-      <Navbar role="admin" />
-
-      <div style={{ padding: "20px" }}>
-        <h2>Admin Control Panel</h2>
-
-        <div>
-          <h3>Organization Overview</h3>
-          <p>Total Employees: --</p>
-          <p>Total Managers: --</p>
-          <p>Total Tasks: --</p>
-        </div>
-
-        <div>
-          <h3>System Controls</h3>
-          <button>Create Manager</button>
-          <button>View Audit Logs</button>
-          <button>Reassign Employees</button>
+    <>
+      <Navbar role="Admin" />
+      <div style={{ padding: "30px", color: "white" }}>
+        <h1>Admin Control Panel</h1>
+        <div style={{ display: "flex", gap: "20px" }}>
+          <div style={cardStyle}>Total Employees</div>
+          <div style={cardStyle}>Active Tasks</div>
+          <div style={cardStyle}>Audit Logs</div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
+
+const cardStyle = {
+  background: "white",
+  color: "black",
+  padding: "30px",
+  borderRadius: "10px",
+  width: "200px",
+  textAlign: "center",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+};
 
 export default AdminDashboard;

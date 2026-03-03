@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "../axiosConfig";
 import { Navigate } from "react-router-dom";
 
 function ProtectedRoute({ children, allowedRole }) {
-  const [authorized, setAuthorized] = useState(null);
+  const [auth, setAuth] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await axios.get("/auth/me");
         if (res.data.role === allowedRole) {
-          setAuthorized(true);
+          setAuth(true);
         } else {
-          setAuthorized(false);
+          setAuth(false);
         }
       } catch {
-        setAuthorized(false);
+        setAuth(false);
       }
     };
 
     checkAuth();
   }, [allowedRole]);
 
-  if (authorized === null) return <div>Loading...</div>;
+  if (auth === null) return <div>Loading...</div>;
 
-  return authorized ? children : <Navigate to="/" />;
+  return auth ? children : <Navigate to="/login" />;
 }
 
 export default ProtectedRoute;
