@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const AuthRoutes = require("./routes/authRoutes");
+const TaskRoutes = require("./routes/taskRoutes2");
+const UserRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", AuthRoutes);
+app.use("/api/tasks", TaskRoutes);
+app.use("/api/users",UserRoutes);
 
 // DB Connection
 mongoose

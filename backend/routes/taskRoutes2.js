@@ -1,0 +1,117 @@
+const express = require("express");
+const Task = require("../models/Task");
+const User = require("../models/User");
+
+const { verifyToken } = require("../middleware/authMiddleware");
+const { checkRole } = require("../middleware/roleMiddleware");
+
+const router = express.Router();
+
+// ===============================
+// CREATE TASK (Manager Only)
+// ===============================
+router.post("/create",verifyToken, checkRole("manager"), async (req, res) => {
+    try {
+      const { title, description, assignedTo, deadline, priority } = req.body;
+
+      const employee = await User.findById(assignedTo);
+
+      if (!employee || employee.role !== "employee") {
+        return res.status(400).json({
+          msg: "Invalid employee selected",
+        });
+      }
+
+      const task = await Task.create({
+        title,
+        description,
+        assignedTo,
+        assignedBy: req.user.id,
+        deadline,
+        priority,
+      });
+
+      res.json({
+        msg: "Task Created Successfully",
+        task,
+      });
+
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// ===============================
+// GET TEAM TASKS (Manager)
+// ===============================
+router.get("/manager-tasks", verifyToken, checkRole("manager"), async (req, res) => {
+    try {
+      const tasks = await Task.find({
+        assignedBy: req.user.id,
+      })
+        .populate("assignedTo", "name email");
+
+      res.json(tasks);
+
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// ===============================
+// GET MY TASKS (Employee)
+// ===============================
+router.get("/my-tasks", verifyToken, checkRole("employee"), async (req, res) => {
+    try {
+      const tasks = await Task.find({
+        assignedTo: req.user.id,
+      });
+
+      res.json(tasks);
+
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// GET ALL TASKS (Admin Only)
+router.get("/all", verifyToken, checkRole("admin"), async (req, res) => {
+    const tasks = await Task.find()
+      .populate("assignedTo", "name")
+      .populate("assignedBy", "name");
+
+    res.json(tasks);
+  }
+);
+
+// ===============================
+// UPDATE TASK STATUS (Employee)
+// ===============================
+router.patch("/update-status/:id", verifyToken, checkRole("employee"), async (req, res) => {
+    try {
+      const { status } = req.body;
+
+      const task = await Task.findOne({
+        _id: req.params.id,
+        assignedTo: req.user.id, // ensures employee can only update their own task
+      });
+
+      if (!task) {
+        return res.status(404).json({ msg: "Task not found" });
+      }
+
+      task.status = status;
+      await task.save();
+
+      res.json({ msg: "Status Updated", task });
+
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+module.exports = router;
