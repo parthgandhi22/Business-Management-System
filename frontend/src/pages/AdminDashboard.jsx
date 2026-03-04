@@ -6,6 +6,7 @@ import "../index.css";
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [logs, setLogs] = useState([]);
 
   // ===============================
   // Fetch All Users
@@ -31,9 +32,22 @@ function AdminDashboard() {
     }
   };
 
+  // ===============================
+  // Fetch Audit Logs
+  // ===============================
+  const fetchLogs = async () => {
+    try {
+      const res = await axios.get("/audit/logs");
+      setLogs(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchTasks();
+    fetchLogs();
   }, []);
 
   // ===============================
@@ -49,10 +63,11 @@ function AdminDashboard() {
     try {
       await axios.delete(`/tasks/delete/${taskId}`);
 
-      // Optimistic UI update
       setTasks((prev) =>
         prev.filter((task) => task._id !== taskId)
       );
+
+      fetchLogs(); // refresh logs after delete
     } catch (err) {
       console.error(err);
       alert("Error deleting task");
@@ -118,7 +133,6 @@ function AdminDashboard() {
                   key={task._id}
                   className={`admin-task-card ${statusClass}`}
                 >
-                  {/* Header */}
                   <div className="admin-card-header">
                     <h3>{task.title}</h3>
 
@@ -130,9 +144,7 @@ function AdminDashboard() {
                     </button>
                   </div>
 
-                  {/* Body */}
                   <div className="admin-task-body">
-
                     <div className="task-meta">
                       <span>👤 {task.assignedTo?.name}</span>
                       <span>🧑‍💼 {task.assignedBy?.name}</span>
@@ -151,16 +163,77 @@ function AdminDashboard() {
                         {task.status}
                       </span>
                     </div>
-
                   </div>
                 </div>
               );
             })
           )}
         </div>
+
+        {/* ===== Audit Logs Section ===== */}
+        <div className="section" style={{ marginTop: "40px" }}>
+          <h2>System Activity Timeline</h2>
+
+          {logs.length === 0 ? (
+            <p>No activity recorded.</p>
+          ) : (
+            <div className="audit-timeline">
+
+              {logs.map((log) => {
+                const visual = getLogVisual(log.action);
+
+                return (
+                  <div key={log._id} className="timeline-item">
+
+                    {/* Timeline Icon */}
+                    <div className={`timeline-icon ${visual.class}`}>
+                      {visual.icon}
+                    </div>
+
+                    {/* Timeline Content */}
+                    <div className="timeline-content">
+
+                      <div className="audit-action">
+                        {log.description}
+                      </div>
+
+                      <div className="audit-meta">
+                        <span className="audit-role">{log.role}</span>
+
+                        <span>
+                          {new Date(log.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+
+                    </div>
+
+                  </div>
+                );
+              })}
+
+            </div>
+          )}
+        </div>
+
       </div>
     </>
   );
+}
+
+function getLogVisual(action = "") {
+  if (action.includes("CREATE")) {
+    return { icon: "➕", class: "log-create" };
+  }
+  if (action.includes("DELETE")) {
+    return { icon: "🗑️", class: "log-delete" };
+  }
+  if (action.includes("UPDATE")) {
+    return { icon: "✏️", class: "log-update" };
+  }
+  if (action.includes("STATUS")) {
+    return { icon: "🔄", class: "log-status" };
+  }
+  return { icon: "📌", class: "log-default" };
 }
 
 function getStatusClass(status) {

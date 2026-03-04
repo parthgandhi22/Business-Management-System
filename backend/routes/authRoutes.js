@@ -12,7 +12,7 @@ router.post("/register", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await User.create({
-    name,
+    name, 
     email,
     password: hashedPassword,
     role
@@ -32,7 +32,7 @@ router.post("/login", async (req, res) => {
   if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
   const token = jwt.sign(
-    { id: user._id, role: user.role },
+    { id: user._id, name:user.name, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -64,6 +64,7 @@ router.get("/me", verifyToken, async (req, res) => {
     name:user.name,
     role: user.role
   });
+
 });
 
 module.exports = router;

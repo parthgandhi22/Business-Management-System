@@ -1,6 +1,7 @@
 const express = require("express");
 const Task = require("../models/Task");
 const User = require("../models/User");
+const logAction = require("../utils/logAction");
 
 const { verifyToken } = require("../middleware/authMiddleware");
 const { checkRole } = require("../middleware/roleMiddleware");
@@ -29,6 +30,14 @@ router.post("/create",verifyToken, checkRole("manager"), async (req, res) => {
         assignedBy: req.user.id,
         deadline,
         priority,
+      });
+
+      await logAction({
+        user: req.user,
+        action: "CREATE_TASK",
+        targetType: "task",
+        targetId: task._id,
+        description: `${req.user.name} created task "${task.title}"`
       });
 
       res.json({
@@ -106,6 +115,14 @@ router.patch("/update-status/:id", verifyToken, checkRole("employee"), async (re
       task.status = status;
       await task.save();
 
+      await logAction({
+        user: req.user,
+        action: "UPDATE_TASK_STATUS",
+        targetType: "task",
+        targetId: task._id,
+        description: `${req.user.name} changed status to ${status} of task "${task.title}"`
+      });
+
       res.json({ msg: "Status Updated", task });
 
     } catch (err) {
@@ -140,6 +157,14 @@ router.delete(
       }
 
       await task.deleteOne();
+
+      await logAction({
+        user: req.user,
+        action: "DELETE_TASK",
+        targetType: "task",
+        targetId: task._id,
+        description: `${req.user.name} deleted task "${task.title}"`
+      });
 
       res.json({ msg: "Task deleted successfully" });
 
