@@ -7,7 +7,7 @@ import EmployeeDashboard from "./pages/EmployeeDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  
+
   return (
       <Routes>
         <Route path="/" element={<Register />} />
@@ -21,6 +21,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
 
         <Route
           path="/dashboard/manager"
