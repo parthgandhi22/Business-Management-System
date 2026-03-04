@@ -57,12 +57,13 @@ const { verifyToken } = require("../middleware/authMiddleware");
 
 // PROTECTED ROUTE
 router.get("/me", verifyToken, async (req, res) => {
-  const user = await User.findById(req.user.id).select("name role");
+  const user = await User.findById(req.user.id);
   
   res.json({
     id: user.id,
     name:user.name,
-    role: user.role
+    role: user.role,
+    googleAccessToken: user.googleAccessToken
   });
 
 });

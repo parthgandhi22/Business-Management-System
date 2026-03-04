@@ -10,15 +10,60 @@ import "../index.css";
 
 function EmployeeDashboard() {
   const [tasks, setTasks] = useState([]);
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [loadingCalendar, setLoadingCalendar] = useState(true);
 
+  // ===============================
+  // Fetch Employee Tasks
+  // ===============================
   const fetchTasks = async () => {
-    const res = await axios.get("/tasks/my-tasks");
-    setTasks(res.data);
+    try {
+      const res = await axios.get("/tasks/my-tasks");
+      setTasks(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ===============================
+  // Check Google Calendar Status
+  // ===============================
+  const checkCalendarConnection = async () => {
+    try {
+      const res = await axios.get("/auth/me");
+
+      if (res.data.googleAccessToken) {
+        setCalendarConnected(true);
+      } else {
+        setCalendarConnected(false);
+      }
+
+      setLoadingCalendar(false);
+    } catch (err) {
+      console.error(err);
+      setLoadingCalendar(false);
+    }
   };
 
   useEffect(() => {
     fetchTasks();
+    checkCalendarConnection();
   }, []);
+
+  // ===============================
+  // Connect Google Calendar
+  // ===============================
+  const connectCalendar = () => {
+    window.location.href =
+      "http://localhost:8000/api/google/connect";
+  };
+
+  // ===============================
+  // Open Google Calendar
+  // ===============================
+  const openCalendar = () => {
+    window.open("https://calendar.google.com", "_blank");
+  };
 
   // ===============================
   // Drag End Handler
@@ -29,7 +74,6 @@ function EmployeeDashboard() {
     const taskId = result.draggableId;
     const newStatus = result.destination.droppableId;
 
-    // OPTIMISTIC UPDATE
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task._id === taskId
@@ -44,7 +88,7 @@ function EmployeeDashboard() {
       });
     } catch (err) {
       console.error(err);
-      fetchTasks(); // rollback if error
+      fetchTasks();
     }
   };
 
@@ -58,7 +102,49 @@ function EmployeeDashboard() {
       <Navbar role="Employee" />
 
       <div className="kanban-container">
-        <h1>My Kanban Board</h1>
+
+        {/* ===============================
+            TOP BAR (Calendar Integration)
+        =============================== */}
+
+        <div className="dashboard-topbar">
+
+          <div className="dashboard-title">
+            <h1>My Kanban Board</h1>
+          </div>
+
+          {!loadingCalendar && (
+            <div className="calendar-widget">
+
+              {!calendarConnected ? (
+
+                <button
+                  className="calendar-connect-btn"
+                  onClick={connectCalendar}
+                >
+                  Connect Calendar
+                </button>
+
+              ) : (
+
+                <button
+                  className="calendar-icon-btn"
+                  onClick={openCalendar}
+                  title="Open Google Calendar"
+                >
+                  📅
+                </button>
+
+              )}
+
+            </div>
+          )}
+
+        </div>
+
+        {/* ===============================
+            KANBAN BOARD
+        =============================== */}
 
         <DragDropContext onDragEnd={onDragEnd}>
           <div className="kanban-board">
@@ -71,6 +157,7 @@ function EmployeeDashboard() {
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                   >
+
                     <h3>{status}</h3>
 
                     {getTasksByStatus(status).map((task, index) => (
@@ -86,19 +173,24 @@ function EmployeeDashboard() {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                           >
+
                             <h4>{task.title}</h4>
+
                             <p>{task.description}</p>
+
                             <small>
                               {task.deadline
                                 ? new Date(task.deadline).toLocaleDateString()
                                 : "No Deadline"}
                             </small>
+
                           </div>
                         )}
                       </Draggable>
                     ))}
 
                     {provided.placeholder}
+
                   </div>
                 )}
               </Droppable>
@@ -106,6 +198,7 @@ function EmployeeDashboard() {
 
           </div>
         </DragDropContext>
+
       </div>
     </>
   );

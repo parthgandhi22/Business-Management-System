@@ -2,6 +2,7 @@ const express = require("express");
 const Task = require("../models/Task");
 const User = require("../models/User");
 const logAction = require("../utils/logAction");
+const createCalendarEvent = require("../utils/createCalendarEvent");
 
 const { verifyToken } = require("../middleware/authMiddleware");
 const { checkRole } = require("../middleware/roleMiddleware");
@@ -39,6 +40,8 @@ router.post("/create",verifyToken, checkRole("manager"), async (req, res) => {
         targetId: task._id,
         description: `${req.user.name} created task "${task.title}"`
       });
+
+      await createCalendarEvent(assignedTo, task);
 
       res.json({
         msg: "Task Created Successfully",
