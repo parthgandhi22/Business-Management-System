@@ -684,3 +684,55 @@ body {
   background: #4285f4;
   color: white;
 }
+
+.payroll-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+/* HEADER */
+.payroll-table thead {
+  background: #f3f4f6;
+}
+
+.payroll-table th {
+  color: #111827;
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+}
+
+/* BODY */
+.payroll-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #ffffff;
+}
+
+/* DOWNLOAD LINK */
+.payroll-table a {
+  color: #5f0eeb;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+/* SEND EMAIL BUTTON */
+.send-mail-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.send-mail-btn:hover {
+  background: #16a34a;
+}
+
+/* SENT STATUS */
+.sent-badge {
+  color: #22c55e;
+  font-weight: 600;
+}
