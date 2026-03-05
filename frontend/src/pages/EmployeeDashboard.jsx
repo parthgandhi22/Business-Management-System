@@ -9,7 +9,10 @@ import {
 import "../index.css";
 
 function EmployeeDashboard() {
+
   const [tasks, setTasks] = useState([]);
+  const [messages, setMessages] = useState([]);
+
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [loadingCalendar, setLoadingCalendar] = useState(true);
 
@@ -26,7 +29,19 @@ function EmployeeDashboard() {
   };
 
   // ===============================
-  // Check Google Calendar Status
+  // Fetch Inbox Messages
+  // ===============================
+  const fetchMessages = async () => {
+    try {
+      const res = await axios.get("/messages/inbox");
+      setMessages(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ===============================
+  // Check Google Calendar
   // ===============================
   const checkCalendarConnection = async () => {
     try {
@@ -39,6 +54,7 @@ function EmployeeDashboard() {
       }
 
       setLoadingCalendar(false);
+
     } catch (err) {
       console.error(err);
       setLoadingCalendar(false);
@@ -47,6 +63,7 @@ function EmployeeDashboard() {
 
   useEffect(() => {
     fetchTasks();
+    fetchMessages();
     checkCalendarConnection();
   }, []);
 
@@ -58,9 +75,6 @@ function EmployeeDashboard() {
       "http://localhost:8000/api/google/connect";
   };
 
-  // ===============================
-  // Open Google Calendar
-  // ===============================
   const openCalendar = () => {
     window.open("https://calendar.google.com", "_blank");
   };
@@ -69,6 +83,7 @@ function EmployeeDashboard() {
   // Drag End Handler
   // ===============================
   const onDragEnd = async (result) => {
+
     if (!result.destination) return;
 
     const taskId = result.draggableId;
@@ -86,10 +101,12 @@ function EmployeeDashboard() {
       await axios.patch(`/tasks/update-status/${taskId}`, {
         status: newStatus,
       });
+
     } catch (err) {
       console.error(err);
       fetchTasks();
     }
+
   };
 
   const getTasksByStatus = (status) =>
@@ -103,9 +120,7 @@ function EmployeeDashboard() {
 
       <div className="kanban-container">
 
-        {/* ===============================
-            TOP BAR (Calendar Integration)
-        =============================== */}
+        {/* ===== TOP BAR ===== */}
 
         <div className="dashboard-topbar">
 
@@ -142,9 +157,7 @@ function EmployeeDashboard() {
 
         </div>
 
-        {/* ===============================
-            KANBAN BOARD
-        =============================== */}
+        {/* ===== KANBAN BOARD ===== */}
 
         <DragDropContext onDragEnd={onDragEnd}>
           <div className="kanban-board">
@@ -198,6 +211,35 @@ function EmployeeDashboard() {
 
           </div>
         </DragDropContext>
+
+        {/* ===== INBOX SECTION ===== */}
+
+        <div className="inbox-section">
+
+          <h2>Inbox</h2>
+
+          {messages.length === 0 ? (
+            <p>No messages</p>
+          ) : (
+            messages.map((msg) => (
+
+              <div
+                key={msg._id}
+                className={`message-card ${msg.isRead ? "" : "unread"}`}
+              >
+
+                <p>{msg.message}</p>
+
+                <small>
+                  {new Date(msg.createdAt).toLocaleString()}
+                </small>
+
+              </div>
+
+            ))
+          )}
+
+        </div>
 
       </div>
     </>

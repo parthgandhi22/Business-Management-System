@@ -10,11 +10,12 @@ function AdminDashboard() {
   const [logs, setLogs] = useState([]);
   const [slips, setSlips] = useState([]);
 
+  const [announcement, setAnnouncement] = useState("");
+
   // ===============================
   // Fetch Users
   // ===============================
   const fetchUsers = async () => {
-    
     try {
       const res = await axios.get("/users/all");
       setUsers(res.data);
@@ -67,15 +68,36 @@ function AdminDashboard() {
   }, []);
 
   // ===============================
-  // Send Email
+  // Send Payroll Email
   // ===============================
   const sendEmail = async (id) => {
+    try {
+      await axios.post(`/payroll/send/${id}`);
+      fetchSlips();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ===============================
+  // Send Announcement
+  // ===============================
+  const sendAnnouncement = async () => {
+
+    if (!announcement.trim()) {
+      alert("Write announcement first");
+      return;
+    }
 
     try {
 
-      await axios.post(`/payroll/send/${id}`);
+      await axios.post("/admin/announcement", {
+        message: announcement
+      });
 
-      fetchSlips();
+      alert("Announcement sent to all employees");
+
+      setAnnouncement("");
 
     } catch (err) {
 
@@ -151,7 +173,30 @@ function AdminDashboard() {
 
         </div>
 
+        {/* ===== ANNOUNCEMENT SECTION ===== */}
+
+        <div className="section" style={{ marginTop: "30px" }}>
+
+          <h2>Company Announcement</h2>
+
+          <textarea
+            className="announcement-box"
+            placeholder="Write announcement for all employees..."
+            value={announcement}
+            onChange={(e) => setAnnouncement(e.target.value)}
+          />
+
+          <button
+            className="announcement-btn"
+            onClick={sendAnnouncement}
+          >
+            Send Announcement
+          </button>
+
+        </div>
+
         {/* ===== Users ===== */}
+
         <div className="section" style={{ marginTop: "30px" }}>
 
           <h2>All Users</h2>
@@ -161,9 +206,7 @@ function AdminDashboard() {
             <div key={user._id} className="task-row">
 
               <span>{user.name}</span>
-
               <span>{user.email}</span>
-
               <span className="badge">{user.role}</span>
 
             </div>
@@ -173,6 +216,7 @@ function AdminDashboard() {
         </div>
 
         {/* ===== Tasks ===== */}
+
         <div className="section" style={{ marginTop: "30px" }}>
 
           <h2>All Tasks</h2>
@@ -203,7 +247,6 @@ function AdminDashboard() {
                   <div className="task-meta">
 
                     <span>👤 {task.assignedTo?.name}</span>
-
                     <span>🧑‍💼 {task.assignedBy?.name}</span>
 
                   </div>
@@ -211,11 +254,9 @@ function AdminDashboard() {
                   <div className="task-footer">
 
                     <span className="deadline">
-
                       📅 {task.deadline
                         ? new Date(task.deadline).toLocaleDateString()
                         : "No Deadline"}
-
                     </span>
 
                     <span className={`status-pill ${statusClass}`}>
@@ -235,6 +276,7 @@ function AdminDashboard() {
         </div>
 
         {/* ===== Payroll ===== */}
+
         <div className="section" style={{ marginTop: "40px" }}>
 
           <h2>Payroll Management</h2>
@@ -312,6 +354,7 @@ function AdminDashboard() {
         </div>
 
         {/* ===== Audit Logs ===== */}
+
         <div className="section" style={{ marginTop: "40px" }}>
 
           <h2>System Activity Timeline</h2>

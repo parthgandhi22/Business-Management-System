@@ -7,7 +7,7 @@ const { checkRole } = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
-// this route is for testing email functionality, you can remove it in production
+// this route is for testing functionality, you can remove it in production
 // ============================
 // GENERATE SALARY SLIP
 // ============================

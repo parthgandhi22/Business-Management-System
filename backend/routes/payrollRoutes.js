@@ -4,6 +4,7 @@ const User = require("../models/User");
 
 const sendEmail = require("../utils/sendEmail");
 const { salaryEmailTemplate } = require("../utils/emailTemplates");
+const createMessage = require("../utils/createMessage");
 
 const { verifyToken } = require("../middleware/authMiddleware");
 const { checkRole } = require("../middleware/roleMiddleware");
@@ -60,6 +61,13 @@ router.post("/send/:id", verifyToken, checkRole("admin"), async (req, res) => {
     slip.sent = true;
 
     await slip.save();
+
+    await createMessage({
+      sender: "Admin",
+      receiver: slip.employee._id,
+      type: "payroll",
+      message: `Salary slip for ${slip.month} has been sent to your email`
+    });
 
     res.json({ msg: "Email sent successfully" });
 

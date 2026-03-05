@@ -3,6 +3,7 @@ const Task = require("../models/Task");
 const User = require("../models/User");
 const logAction = require("../utils/logAction");
 const createCalendarEvent = require("../utils/createCalendarEvent");
+const createMessage = require("../utils/createMessage");
 
 const { verifyToken } = require("../middleware/authMiddleware");
 const { checkRole } = require("../middleware/roleMiddleware");
@@ -42,6 +43,13 @@ router.post("/create",verifyToken, checkRole("manager"), async (req, res) => {
       });
 
       await createCalendarEvent(assignedTo, task);
+
+      await createMessage({
+        sender: req.user.name,
+        receiver: assignedTo,
+        type: "task",
+        message: `You have been assigned a new task "${task.title}"`
+      });
 
       res.json({
         msg: "Task Created Successfully",
@@ -126,6 +134,16 @@ router.patch("/update-status/:id", verifyToken, checkRole("employee"), async (re
         description: `${req.user.name} changed status to ${status} of task "${task.title}"`
       });
 
+      if(status === "Completed"){
+
+        await createMessage({
+          sender: req.user.name,
+          receiver: req.user.id,
+          type: "task",
+          message: `You completed task "${task.title}"`
+        });
+      }
+
       res.json({ msg: "Status Updated", task });
 
     } catch (err) {
@@ -167,6 +185,13 @@ router.delete(
         targetType: "task",
         targetId: task._id,
         description: `${req.user.name} deleted task "${task.title}"`
+      });
+
+      await createMessage({
+        sender: req.user.name,
+        receiver: task.assignedTo,
+        type: "task",
+        message: `Task "${task.title}" assigned to you has been deleted`
       });
 
       res.json({ msg: "Task deleted successfully" });
