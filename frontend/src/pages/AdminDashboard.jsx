@@ -14,6 +14,7 @@ function AdminDashboard() {
   // Fetch Users
   // ===============================
   const fetchUsers = async () => {
+    
     try {
       const res = await axios.get("/users/all");
       setUsers(res.data);
