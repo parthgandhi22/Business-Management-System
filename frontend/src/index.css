@@ -717,59 +717,187 @@ body {
   text-decoration: underline;
 }
 
-/* SEND EMAIL BUTTON */
-.send-mail-btn {
+/* ===== ANNOUNCEMENT SECTION ===== */
+
+.announcement-section {
+  margin-top: 10px;
+}
+
+.announcement-section h2 {
+  margin-bottom: 15px;
+}
+
+.announcement-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.announcement-box {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  resize: none;
+  font-size: 15px;
+  min-height: 40px;
+}
+
+/* Button */
+
+.announcement-btn {
   background: #22c55e;
   color: white;
   border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
   cursor: pointer;
+  font-weight: 600;
 }
 
-.send-mail-btn:hover {
+.announcement-btn:hover {
   background: #16a34a;
 }
 
-/* SENT STATUS */
-.sent-badge {
-  color: #22c55e;
-  font-weight: 600;
-}
+/* Inbox */
 
 .inbox-section{
   margin-top:40px;
 }
 
 .message-card{
-  background:white;
-  border:1px solid #ddd;
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:6px;
-  color:#1f2937;
+  background:#ffffff;
+  border:1px solid #d1d5db;
+  padding:14px;
+  margin-bottom:12px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
+  color:black
+}
+
+.message-card:hover{
+  background:#f9fafb;
 }
 
 .message-card.unread{
-  border-left:4px solid #2563eb;
-  background:#f0f6ff;
+  border-left:5px solid #2563eb;
+  background:#eef4ff;
 }
 
-.announcement-box{
-  width:100%;
-  height:80px;
-  padding:10px;
-  margin-top:10px;
-  border-radius:6px;
-  border:1px solid #ccc;
+.message-card p{
+  margin:0;
+  font-weight:500;
 }
 
-.announcement-btn{
-  margin-top:10px;
-  padding:8px 18px;
-  background:#2563eb;
+.message-card small{
+  color:#6b7280;
+  font-size:12px;
+}
+
+/* Notification Badge */
+
+.notification-badge{
+  background:red;
   color:white;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
+  padding:2px 7px;
+  border-radius:10px;
+  font-size:12px;
+  margin-left:8px;
+}
+
+/* Topbar */
+
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.inbox-indicator{
+  font-weight:600;
+}
+
+.salary-section{
+  margin-top:40px;
+}
+
+.salary-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+.salary-table th{
+  text-align:left;
+  padding:10px;
+  border-bottom:2px solid #e5e7eb;
+}
+
+.salary-table td{
+  padding:10px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.salary-table a{
+  color:#2563eb;
+  text-decoration:none;
+  font-weight:500;
+}
+
+.salary-table a:hover{
+  text-decoration:underline;
+}
+
+.active-users-section{
+  margin-top:30px;
+}
+
+.active-users-list{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.active-user{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#f3f4f6;
+  padding:8px 12px;
+  border-radius:20px;
+  font-weight:500;
+  color:black;
+}
+
+.online-dot{
+  width:10px;
+  height:10px;
+  background:#22c55e;
+  border-radius:50%;
+}
+
+.live-notification{
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #111;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  z-index: 9999;
+}
+
+@keyframes slideIn{
+  from{
+    transform: translateX(100%);
+    opacity:0;
+  }
+  to{
+    transform: translateX(0);
+    opacity:1;
+  }
 }

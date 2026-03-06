@@ -51,6 +51,9 @@ router.post("/create",verifyToken, checkRole("manager"), async (req, res) => {
         message: `You have been assigned a new task "${task.title}"`
       });
 
+      const io = req.app.get("io");
+      io.emit("taskCreated", task);
+
       res.json({
         msg: "Task Created Successfully",
         task,
@@ -144,6 +147,13 @@ router.patch("/update-status/:id", verifyToken, checkRole("employee"), async (re
         });
       }
 
+      const io = req.app.get("io");
+
+        io.emit("taskUpdated", {
+          taskId: task._id,
+          status: task.status
+        });
+      
       res.json({ msg: "Status Updated", task });
 
     } catch (err) {
@@ -155,11 +165,7 @@ router.patch("/update-status/:id", verifyToken, checkRole("employee"), async (re
 // ===============================
 // DELETE TASK (Manager & Admin)
 // ===============================
-router.delete(
-  "/delete/:id",
-  verifyToken,
-  checkRole("manager", "admin"),
-  async (req, res) => {
+router.delete("/delete/:id", verifyToken, checkRole("manager", "admin"), async (req, res) => {
     try {
       const task = await Task.findById(req.params.id);
 
@@ -193,6 +199,9 @@ router.delete(
         type: "task",
         message: `Task "${task.title}" assigned to you has been deleted`
       });
+
+      const io = req.app.get("io");
+      io.emit("taskDeleted", task._id);
 
       res.json({ msg: "Task deleted successfully" });
 

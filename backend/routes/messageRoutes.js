@@ -27,4 +27,21 @@ router.patch("/read/:id", verifyToken, async (req, res) => {
 
 });
 
+
+router.get("/unread-count", verifyToken, async (req,res)=>{
+
+  try{
+
+    const count = await Message.countDocuments({
+      receiver:req.user.id,
+      isRead:false
+    });
+
+    res.json({count});
+
+  }catch(err){
+    res.status(500).json({error:err.message});
+  }
+});
+
 module.exports = router;

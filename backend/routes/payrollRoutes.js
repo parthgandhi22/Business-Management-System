@@ -32,6 +32,28 @@ router.get("/all", verifyToken, checkRole("admin"), async (req, res) => {
 
 });
 
+// ===============================
+// GET MY SLIPS (EMPLOYEE)
+// ===============================
+
+router.get("/my-slips", verifyToken, async (req,res)=>{
+
+  try{
+
+    const slips = await SalarySlip.find({
+      employee: req.user.id
+    })
+    .sort({createdAt:-1})
+    .limit(5);
+
+    res.json(slips);
+
+  }catch(err){
+    res.status(500).json({error:err.message});
+  }
+
+});
+
 
 // ===============================
 // SEND EMAIL
@@ -61,13 +83,21 @@ router.post("/send/:id", verifyToken, checkRole("admin"), async (req, res) => {
     slip.sent = true;
 
     await slip.save();
-
+    
     await createMessage({
       sender: "Admin",
       receiver: slip.employee._id,
       type: "payroll",
       message: `Salary slip for ${slip.month} has been sent to your email`
     });
+
+    const io = req.app.get("io");
+    
+    io.emit("salarySent", {
+      employee: emp.name,
+      month: slip.month
+    });
+
 
     res.json({ msg: "Email sent successfully" });
 

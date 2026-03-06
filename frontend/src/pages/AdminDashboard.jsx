@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import axios from "../axiosConfig";
+import socket from "../socket";
 import "../index.css";
 
 function AdminDashboard() {
@@ -65,6 +66,35 @@ function AdminDashboard() {
     fetchTasks();
     fetchLogs();
     fetchSlips();
+  }, []);
+  
+
+  useEffect(() => {
+
+    socket.on("taskCreated", ()=>{
+      fetchTasks();
+      fetchLogs();
+    });
+
+    socket.on("taskDeleted", ()=>{
+      fetchTasks();
+      fetchLogs();
+    });
+
+    socket.on("taskUpdated", ()=>{
+      fetchTasks();
+      fetchLogs();
+    });
+    
+    socket.on("salarySent", fetchSlips);
+
+    return () => {
+      socket.off("taskUpdated");
+      socket.off("taskCreated");
+      socket.off("taskDeleted");
+      socket.off("salarySent");
+    };
+
   }, []);
 
   // ===============================
@@ -175,23 +205,27 @@ function AdminDashboard() {
 
         {/* ===== ANNOUNCEMENT SECTION ===== */}
 
-        <div className="section" style={{ marginTop: "30px" }}>
+        <div className="section announcement-section">
 
           <h2>Company Announcement</h2>
 
-          <textarea
-            className="announcement-box"
-            placeholder="Write announcement for all employees..."
-            value={announcement}
-            onChange={(e) => setAnnouncement(e.target.value)}
-          />
+          <div className="announcement-container">
 
-          <button
-            className="announcement-btn"
-            onClick={sendAnnouncement}
-          >
-            Send Announcement
-          </button>
+            <textarea
+              className="announcement-box"
+              placeholder="Write announcement for all employees..."
+              value={announcement}
+              onChange={(e) => setAnnouncement(e.target.value)}
+            />
+
+            <button
+              className="announcement-btn"
+              onClick={sendAnnouncement}
+            >
+              Send Announcement
+            </button>
+
+          </div>
 
         </div>
 

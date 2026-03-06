@@ -44,7 +44,7 @@ router.post("/login", async (req, res) => {
     sameSite: "lax"
   });
 
-  res.json({ message: "Login successful", role: user.role });
+  res.json({ message: "Login successful", role: user.role, name: user.name, id: user._id });
 });
 
 // LOGOUT

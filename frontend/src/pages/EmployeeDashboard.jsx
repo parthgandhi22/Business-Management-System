@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import axios from "../axiosConfig";
+import socket from "../socket";
 import {
   DragDropContext,
   Droppable,
@@ -12,9 +13,12 @@ function EmployeeDashboard() {
 
   const [tasks, setTasks] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [slips, setSlips] = useState([]);
 
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [loadingCalendar, setLoadingCalendar] = useState(true);
+
 
   // ===============================
   // Fetch Employee Tasks
@@ -28,6 +32,7 @@ function EmployeeDashboard() {
     }
   };
 
+
   // ===============================
   // Fetch Inbox Messages
   // ===============================
@@ -40,11 +45,53 @@ function EmployeeDashboard() {
     }
   };
 
+
+  // ===============================
+  // Fetch Unread Counter
+  // ===============================
+  const fetchUnread = async () => {
+    try {
+      const res = await axios.get("/messages/unread-count");
+      setUnreadCount(res.data.count);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
+  // ===============================
+  // Fetch Salary Slips (LATEST 5)
+  // ===============================
+  const fetchSlips = async () => {
+    try {
+      const res = await axios.get("/payroll/my-slips");
+      setSlips(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
+  // ===============================
+  // Mark message as read
+  // ===============================
+  const markAsRead = async (id) => {
+    try {
+      await axios.patch(`/messages/read/${id}`);
+      fetchMessages();
+      fetchUnread();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
   // ===============================
   // Check Google Calendar
   // ===============================
   const checkCalendarConnection = async () => {
     try {
+
       const res = await axios.get("/auth/me");
 
       if (res.data.googleAccessToken) {
@@ -61,14 +108,79 @@ function EmployeeDashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchTasks();
-    fetchMessages();
-    checkCalendarConnection();
-  }, []);
 
   // ===============================
-  // Connect Google Calendar
+  // INITIAL DATA LOAD
+  // ===============================
+  useEffect(() => {
+
+    fetchTasks();
+    fetchMessages();
+    fetchUnread();
+    fetchSlips();
+    checkCalendarConnection();
+
+  }, []);
+
+
+  // ===============================
+  // SOCKET EVENTS
+  // ===============================
+  useEffect(() => {
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    // ⭐ Notify server that this user is online
+    if (user) {
+      socket.emit("userOnline", {
+        id: user.id,
+        name: user.name,
+        role: user.role
+      });
+    }
+
+    socket.on("taskUpdated",() => {
+      fetchTasks();
+      fetchUnread();
+      fetchMessages();
+    });
+
+    socket.on("taskCreated",() => {
+      fetchTasks();
+      fetchUnread();
+      fetchMessages();
+    });
+
+    socket.on("taskDeleted",() => {
+      fetchTasks();
+      fetchUnread();
+      fetchMessages();
+    });
+
+    socket.on("salarySent", () => {
+      fetchUnread();
+      fetchMessages();
+      fetchSlips();
+    });
+
+    socket.on("announcement", () => {
+      fetchUnread();
+      fetchMessages();
+    });
+
+    return () => {
+      socket.off("taskUpdated");
+      socket.off("taskCreated");
+      socket.off("taskDeleted");
+      socket.off("salarySent");
+      socket.off("announcement");
+    };
+
+  }, []);
+
+
+  // ===============================
+  // Google Calendar
   // ===============================
   const connectCalendar = () => {
     window.location.href =
@@ -78,6 +190,7 @@ function EmployeeDashboard() {
   const openCalendar = () => {
     window.open("https://calendar.google.com", "_blank");
   };
+
 
   // ===============================
   // Drag End Handler
@@ -98,6 +211,7 @@ function EmployeeDashboard() {
     );
 
     try {
+
       await axios.patch(`/tasks/update-status/${taskId}`, {
         status: newStatus,
       });
@@ -109,10 +223,12 @@ function EmployeeDashboard() {
 
   };
 
+
   const getTasksByStatus = (status) =>
     tasks
       .filter((task) => task.status === status)
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
 
   return (
     <>
@@ -128,34 +244,39 @@ function EmployeeDashboard() {
             <h1>My Kanban Board</h1>
           </div>
 
-          {!loadingCalendar && (
-            <div className="calendar-widget">
+          <div className="topbar-right">
 
-              {!calendarConnected ? (
+            {!loadingCalendar && (
+              <div className="calendar-widget">
 
-                <button
-                  className="calendar-connect-btn"
-                  onClick={connectCalendar}
-                >
-                  Connect Calendar
-                </button>
+                {!calendarConnected ? (
 
-              ) : (
+                  <button
+                    className="calendar-connect-btn"
+                    onClick={connectCalendar}
+                  >
+                    Connect Calendar
+                  </button>
 
-                <button
-                  className="calendar-icon-btn"
-                  onClick={openCalendar}
-                  title="Open Google Calendar"
-                >
-                  📅
-                </button>
+                ) : (
 
-              )}
+                  <button
+                    className="calendar-icon-btn"
+                    onClick={openCalendar}
+                    title="Open Google Calendar"
+                  >
+                    📅
+                  </button>
 
-            </div>
-          )}
+                )}
+
+              </div>
+            )}
+
+          </div>
 
         </div>
+
 
         {/* ===== KANBAN BOARD ===== */}
 
@@ -164,6 +285,7 @@ function EmployeeDashboard() {
 
             {["To Do", "In Progress", "Completed"].map((status) => (
               <Droppable droppableId={status} key={status}>
+
                 {(provided) => (
                   <div
                     className="kanban-column"
@@ -174,12 +296,15 @@ function EmployeeDashboard() {
                     <h3>{status}</h3>
 
                     {getTasksByStatus(status).map((task, index) => (
+
                       <Draggable
                         key={task._id}
                         draggableId={task._id}
                         index={index}
                       >
+
                         {(provided) => (
+
                           <div
                             className="kanban-card"
                             ref={provided.innerRef}
@@ -198,34 +323,50 @@ function EmployeeDashboard() {
                             </small>
 
                           </div>
+
                         )}
+
                       </Draggable>
+
                     ))}
 
                     {provided.placeholder}
 
                   </div>
                 )}
+
               </Droppable>
             ))}
 
           </div>
         </DragDropContext>
 
-        {/* ===== INBOX SECTION ===== */}
+
+        {/* ===== INBOX ===== */}
 
         <div className="inbox-section">
 
-          <h2>Inbox</h2>
+          <h2>
+            Inbox
+            {unreadCount > 0 && (
+              <span className="notification-badge">
+                {unreadCount}
+              </span>
+            )}
+          </h2>
 
           {messages.length === 0 ? (
+
             <p>No messages</p>
+
           ) : (
+
             messages.map((msg) => (
 
               <div
                 key={msg._id}
                 className={`message-card ${msg.isRead ? "" : "unread"}`}
+                onClick={() => markAsRead(msg._id)}
               >
 
                 <p>{msg.message}</p>
@@ -237,6 +378,67 @@ function EmployeeDashboard() {
               </div>
 
             ))
+
+          )}
+
+        </div>
+
+
+        {/* ===== SALARY SLIPS ===== */}
+
+        <div className="salary-section">
+
+          <h2>Recent Salary Slips</h2>
+
+          {slips.length === 0 ? (
+
+            <p>No salary slips available</p>
+
+          ) : (
+
+            <table className="salary-table">
+
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {slips.map((slip) => {
+
+                  const fileName = slip.filePath.split("/").pop();
+
+                  return (
+
+                    <tr key={slip._id}>
+
+                      <td>{slip.month}</td>
+
+                      <td>
+
+                        <a
+                          href={`http://localhost:8000/salary_slips/${fileName}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Download
+                        </a>
+
+                      </td>
+
+                    </tr>
+
+                  );
+
+                })}
+
+              </tbody>
+
+            </table>
+
           )}
 
         </div>

@@ -23,6 +23,8 @@ router.post("/announcement", verifyToken, checkRole("admin"), async (req, res) =
       });
 
     }
+    const io = req.app.get("io");
+    io.emit("announcement");
 
     res.json({ msg: "Announcement sent" });
 
