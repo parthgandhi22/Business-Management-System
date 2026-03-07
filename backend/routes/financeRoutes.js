@@ -10,7 +10,7 @@ router.post("/burn-rate", async (req,res)=>{
     const { expenses, cash } = req.body;
 
     const response = await axios.post(
-      "http://localhost:5001/predict-burn",
+      "https://business-management-system-ml.onrender.com",
       { expenses, cash }
     );
 

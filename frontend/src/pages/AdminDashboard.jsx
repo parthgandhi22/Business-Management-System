@@ -364,7 +364,7 @@ function AdminDashboard() {
                     <td>
 
                       <a
-                        href={`http://localhost:8000/salary_slips/${fileName}`}
+                        href={`https://business-management-system-8g4u.onrender.com/salary_slips/${fileName}`}
                         target="_blank"
                         rel="noreferrer"
                       >

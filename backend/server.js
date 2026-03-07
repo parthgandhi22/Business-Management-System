@@ -30,7 +30,7 @@ const server = http.createServer(app);
 // SOCKET.IO SETUP
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     credentials: true
   }
 });
@@ -75,7 +75,7 @@ io.on("connection", (socket) => {
 // MIDDLEWARE
 app.use(
   cors({
-    origin: true,
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );

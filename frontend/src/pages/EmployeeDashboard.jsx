@@ -209,7 +209,7 @@ function EmployeeDashboard() {
   // ===============================
   const connectCalendar = () => {
     window.location.href =
-      "http://localhost:8000/api/google/connect";
+      "https://business-management-system-8g4u.onrender.com/api/google/connect";
   };
 
   const openCalendar = () => {
@@ -454,7 +454,7 @@ function EmployeeDashboard() {
                       <td>
 
                         <a
-                          href={`http://localhost:8000/salary_slips/${fileName}`}
+                          href={`https://business-management-system-8g4u.onrender.com/salary_slips/${fileName}`}
                           target="_blank"
                           rel="noreferrer"
                         >

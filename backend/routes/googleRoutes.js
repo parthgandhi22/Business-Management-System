@@ -51,7 +51,7 @@ router.get("/callback", async (req, res) => {
 
     });
     
-    res.redirect("http://localhost:5173/dashboard/employee?calendar=connected");
+    res.redirect("https://operix-eight.vercel.app/dashboard/employee?calendar=connected");
 
   } catch(err){
 
