@@ -8,25 +8,36 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-async function sendEmail(to, subject, htmlContent, attachmentPath = null) {
+const sendEmail = async (to, subject, html, filePath, pdfBuffer) => {
 
   const mailOptions = {
-    from: `"OPERIX HR" <${process.env.EMAIL_USER}>`,
-    to: to,
-    subject: subject,
-    html: htmlContent
+    from: process.env.EMAIL_USER,
+    to,
+    subject,
+    html
   };
 
-  if (attachmentPath) {
+  if (pdfBuffer) {
+
     mailOptions.attachments = [
       {
         filename: "salary-slip.pdf",
-        path: attachmentPath
+        content: pdfBuffer
       }
     ];
+
+  } else if (filePath) {
+
+    mailOptions.attachments = [
+      {
+        path: filePath
+      }
+    ];
+
   }
 
   await transporter.sendMail(mailOptions);
-}
+
+};
 
 module.exports = sendEmail;
